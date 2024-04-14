@@ -58,3 +58,14 @@ class VAE_encoder():
                 x = F.pad(0, 1, 0, 1)
             x = module(x)
 
+        # takes tensor and breaks it into chunks: batch_size, channels, height / 8, width / 8 ->  2 tensors of: batch_size, channels / 2, height / 8, width / 8
+        mean, log_variance = torch.chunk(x, 2, dim=1)
+        log_variance = torch.clamp(x, -30, 20)
+        variance = (log_variance).exp()
+        std = (variance).sqrt()
+
+        # Sample from the latent space
+        x = mean + std * noise
+        x *= 0.18215
+        return x
+
