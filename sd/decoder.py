@@ -2,6 +2,28 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from decoder import VAE_AttentionBlock, VAE_ResidualBlock
+from sd.attention import SelfAttention
+
+
+class VAE_Attention(nn.Module):
+    def __init__(self, channels):
+        super().__init__()
+        self.groupnorm = nn.GroupNorm(32, channels)
+        self.attention = SelfAttention(1, channels)
+    def forward(self, x):
+        # batchsize, channels, height, width
+        residue = x
+        n, c, h, w = x.shape
+         # batchsize, channels, height, width -> batchsize, channels, height * width
+        x = x.view(n, c, h*w)
+         # batchsize, channels, height * width -> batchsize, height * width, channels FLIP LAST AND SECOND TO LAST POSITION
+        x = x.transpose(-1, -2)
+        x = self.attention(x)
+        x = x.transpose(-1, -2) # FLIP BACK LAST AND SECOND TO LAST POSITION
+        x = x.view((n,c, h, w))
+        x += residue     # SKIP LAYER
+        return x
+
 
 
 class VAE_ResidualBlock(nn.Module):

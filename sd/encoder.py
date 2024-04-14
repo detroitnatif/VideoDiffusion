@@ -25,6 +25,7 @@ class VAE_encoder():
          # Batch size, 256, height, width -> Batch size, 256, height / 2, width / 2
         VAE_ResidualBlock(256, 256),
 
+        # Batch size, 256, height, width -> Batch size, 256, height / 4, width / 4
         nn.Conv2d(256, 256, kernel_size=3, stride=2, padding=0),   
 
         VAE_ResidualBlock(256, 512),
