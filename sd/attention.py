@@ -35,4 +35,11 @@ class SelfAttention(nn.Module):
         if casual_mask:
             mask = torch.ones_like(weights, dtype=torch.bool).triu(1)
             weights.masked_fill(mask, -torch.inf)
-        weight /= math.sqrt(self.d_head)
+
+        weights /= math.sqrt(self.d_head)
+        weights = F.softmax(weights, dim=-1)
+        output = weights @ v
+        output = output.transpose(1, 2)
+        output = output.reshape(input_shape)
+        output = self.out_proj(output)
+        return output
