@@ -39,7 +39,7 @@ class UNET(nn.Module):
     def __init__(self, n_emb):
         super().__init__()
 
-        self.encoders = nn.Module([
+        self.encoders = nn.ModuleList([
             SwitchSequential(nn.Conv2d(4, 320, kernel_size=3, padding=1)),
 
             SwitchSequential(UNET_residualBlock(320, 320), UNET_AttentionBlock(8, 40)),
@@ -52,12 +52,66 @@ class UNET(nn.Module):
 
             SwitchSequential(UNET_residualBlock(320, 640), UNET_AttentionBlock(8, 80)),
 
+            SwitchSequential(UNET_residualBlock(640, 640), UNET_AttentionBlock(8, 80)),
 
+            SwitchSequential(nn.Conv2d(640, 640, kernel_size=3, stride=2, padding=1)),
 
+            SwitchSequential(UNET_residualBlock(640, 1280), UNET_AttentionBlock(8, 160)),
+
+            SwitchSequential(UNET_residualBlock(1280, 1280), UNET_AttentionBlock(8, 160)),
+
+            SwitchSequential(nn.Conv2d(1280, 1280, kernel_size=3, stride=2, padding=1)),
+
+            SwitchSequential(UNET_residualBlock(1280, 1280)),
+
+            SwitchSequential(UNET_residualBlock(1280, 1280)),
+            ])
+        
+        self.bottleneck = SwitchSequential(
+            UNET_ResidualBlock(1280, 1280),
+            UNET_AttentionBlock(8, 160),
+            UNET_ResidualBlock(1280, 1280),
+
+        )
+        self.decoders = nn.ModuleList([
+
+            SwitchSequential(UNET_residualBlock(2560, 1280)),
+
+            SwitchSequential(UNET_residualBlock(2560, 1280)),
+
+            SwitchSequential(UNET_residualBlock(2560, 1280), Upsample(1280)),
+
+            SwitchSequential(UNET_residualBlock(320, 320), UNET_AttentionBlock(8, 40)),
+
+            SwitchSequential(nn.Conv2d(320, 320, kernel_size=3, stride=2, padding=1)),
+
+            SwitchSequential(UNET_residualBlock(320, 640), UNET_AttentionBlock(8, 80)),
+
+            SwitchSequential(UNET_residualBlock(320, 640), UNET_AttentionBlock(8, 80)),
+
+            SwitchSequential(UNET_residualBlock(640, 640), UNET_AttentionBlock(8, 80)),
+
+            SwitchSequential(nn.Conv2d(640, 640, kernel_size=3, stride=2, padding=1)),
+
+            SwitchSequential(UNET_residualBlock(640, 1280), UNET_AttentionBlock(8, 160)),
+
+            SwitchSequential(UNET_residualBlock(1280, 1280), UNET_AttentionBlock(8, 160)),
+
+            SwitchSequential(nn.Conv2d(1280, 1280, kernel_size=3, stride=2, padding=1)),
+
+            SwitchSequential(UNET_residualBlock(1280, 1280)),
+
+            SwitchSequential(UNET_residualBlock(1280, 1280)),
+            ])
             
-            
 
-        ])
+class Upsample(nn.Module):
+    def __init__(self, channels):
+        super().__init__()
+        self.conv = nn.Conv2d(channels, channels, kernel_size=3, padding=1)
+    def forward(self, x):
+        x = F.interpolate(x, scale_factor=2, mode='nearest')
+        return self.conv(x)
 
 class Diffusion(nn.Module):
     def __init__(self):

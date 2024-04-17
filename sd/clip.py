@@ -1,10 +1,9 @@
 import torch
 from torch import nn
 from torch.nn import functional as F
-from decoder import VAE_AttentionBlock, VAE_ResidualBlock
 from sd.attention import SelfAttention
 
-class CLIPEMbedding(nn.Module):
+class CLIPEmbedding(nn.Module):
 
     def __init__(self, n_vocab, n_emb, n_tokens):
         super().__init__()
@@ -18,7 +17,7 @@ class CLIPEMbedding(nn.Module):
         return x
     
 class CLIPLayer(nn.Module):
-    def __init(self, n_head, n_emb):
+    def __init__(self, n_head, n_emb):
         super().__init__()
 
         self.layernorm_1 = nn.LayerNorm(n_emb)
