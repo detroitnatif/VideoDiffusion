@@ -7,8 +7,8 @@ class VAE_encoder():
 
     def __init__(self):
         super().__init__(
-        # Batch sieze, channel, height, width -->  batch size, 128, height, width
-        nn.Conv2d(3, 128, kernel_size=3, padding=1),
+        # Batch size, channel, height, width -->  batch size, 128, height, width
+        nn.Conv2d(in_channels=3, out_channels=128, kernel_size=3, padding=1),
         
 
         # Batch size, 128, height, width -> Batch size, 128, height, width
@@ -18,6 +18,7 @@ class VAE_encoder():
 
 
         # Batch size, 128, height, width -> Batch size, 128, heigh / 2, width / 2
+        # Stride of 2 reduces the size by factor of 2
         nn.Conv2d(128, 128, kernel_size=3, stride=2, padding=0),
         
          # Batch size, 128, height, width -> Batch size, 256, height / 2, width  / 2

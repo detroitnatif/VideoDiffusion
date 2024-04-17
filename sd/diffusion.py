@@ -7,9 +7,18 @@ from sd.attention import SelfAttention, CrossAttention
 
 
 class SwitchSequential(nn.Sequential):
-    def forward(self, x):
+    def forward(self, x, context, time):
         for layer in self:
-            if isinstance(layer, UNET_AttentionBlock)
+            if isinstance(layer, UNET_AttentionBlock):
+                x = layer(x, context)
+
+            elif isinstance(layer, UNET_residualBlock):
+                x = layer(x, time)
+
+            else:
+                x = layer(x)
+
+        return x
 
 
 
@@ -32,7 +41,20 @@ class UNET(nn.Module):
 
         self.encoders = nn.Module([
             SwitchSequential(nn.Conv2d(4, 320, kernel_size=3, padding=1)),
-            SwitchSequential(UNET_residualBlock(320, 320), UNET_AttentionBlock(8, 40))
+
+            SwitchSequential(UNET_residualBlock(320, 320), UNET_AttentionBlock(8, 40)),
+
+            SwitchSequential(UNET_residualBlock(320, 320), UNET_AttentionBlock(8, 40)),
+
+            SwitchSequential(nn.Conv2d(320, 320, kernel_size=3, stride=2, padding=1)),
+
+            SwitchSequential(UNET_residualBlock(320, 640), UNET_AttentionBlock(8, 80)),
+
+            SwitchSequential(UNET_residualBlock(320, 640), UNET_AttentionBlock(8, 80)),
+
+
+
+            
             
 
         ])
